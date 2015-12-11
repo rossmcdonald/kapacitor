@@ -1,0 +1,98 @@
+---
+# Channel of Kapacitor to install (stable, unstable, nightly)
+kapacitor_install_version: stable
+
+# Leave empty to use the system hostname
+kapacitor_hostname:
+
+# Directory for storing small amount of metadata
+kapacitor_data_directory: /var/lib/kapacitor
+
+# [http]
+kapacitor_http_bind_address: :9092
+kapacitor_http_auth_enabled: "false"
+kapacitor_http_log_enabled: "true"
+kapacitor_http_write_tracing: "false"
+kapacitor_http_pprof_enabled: "false"
+kapacitor_http_https_enabled: "false"
+kapacitor_http_https_certificate: /etc/ssl/kapacitor.pem
+
+# [logging]
+kapacitor_logging_file: /var/log/kapacitor/kapacitor.log
+kapacitor_logging_level: INFO
+
+# [replay]
+kapacitor_replay_dir: /var/lib/kapacitor/replay
+
+# [task]
+kapacitor_task_dir: /var/lib/kapacitor/tasks
+
+# [influxdb]
+kapacitor_influxdb_enabled: "true"
+kapacitor_influxdb_urls:
+  - http://localhost:8086
+kapacitor_influxdb_username:
+kapacitor_influxdb_password:
+kapacitor_influxdb_timeout: 0
+kapacitor_influxdb_udp_buffer: 1000
+kapacitor_influxdb_udp_read_buffer: 0
+
+# TODO(rossmcdonald): Allow for InfluxDB subscriptions and exclusions
+
+# [smtp]
+kapacitor_smtp_enabled: "false"
+kapacitor_smtp_host: localhost
+kapacitor_smtp_port: 25
+kapacitor_smtp_username: 
+kapacitor_smtp_password: 
+kapacitor_smtp_from: 
+kapacitor_smtp_to:
+  - "oncall@example.com"
+kapacitor_smtp_no_verify: "false"
+kapacitor_smtp_idle_timeout: 30s
+
+# [victorops]
+kapacitor_victorops_enabled: "false"
+kapacitor_victorops_api_key:
+kapacitor_victorops_routing_key:
+kapacitor_victorops_url: https://alert.victorops.com/integrations/generic/20131114/alert
+kapacitor_victorops_global: "false"
+
+# [pagerduty]
+kapacitor_pagerduty_enabled: "false"
+kapacitor_pagerduty_service_key:
+kapacitor_pagerduty_url: https://events.pagerduty.com/generic/2010-04-15/create_event.json
+kapacitor_pagerduty_global: "false"
+
+# [slack]
+kapacitor_slack_enabled: "false"
+kapacitor_slack_url: 
+kapacitor_slack_channel: 
+kapacitor_slack_global: "false"
+
+# [reporting]
+kapacitor_reporting_enabled: "false"
+kapacitor_reporting_enterprise_url: https://enterprise.influxdata.com
+kapacitor_reporting_stats_interval: 1m0s
+
+# [collectd]
+kapacitor_collectd_enabled: "false"
+kapacitor_collectd_bind_address: :25826
+kapacitor_collectd_database: collectd
+kapacitor_collectd_retention_policy: 
+kapacitor_collectd_batch_size: 1000
+kapacitor_collectd_batch_pending: 5
+kapacitor_collectd_batch_timeout: 10s
+kapacitor_collectd_typesdb: /usr/share/collectd/types.db
+
+# [opentsdb]
+kapacitor_opentsdb_enabled: "false"
+kapacitor_opentsdb_bind_address: :4242
+kapacitor_opentsdb_database: opentsdb
+kapacitor_opentsdb_retention_policy: 
+kapacitor_opentsdb_consistency_level: one
+kapacitor_opentsdb_tls_enabled: "false"
+kapacitor_opentsdb_certificate: /etc/ssl/influxdb.pem
+kapacitor_opentsdb_batch_size: 1000
+kapacitor_opentsdb_batch_pending: 5
+kapacitor_opentsdb_batch_timeout: 1s

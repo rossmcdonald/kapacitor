@@ -1,0 +1,31 @@
+---
+- name: Set templatized Kapacitor configuration
+  template: 
+    src: kapacitor.conf.j2 
+    dest: "/etc/kapacitor/kapacitor.conf"
+    force: yes
+    backup: yes
+    owner: kapacitor
+    group: kapacitor
+    mode: 0744
+  when: kapacitor_template_configuration
+  
+- name: Start the Kapacitor service
+  service:
+    name: kapacitor
+    state: restarted
+    enabled: yes
+  register: kapacitor_started
+  when: kapacitor_start_service
+
+- name: Collect service status
+  command: service kapacitor status
+  register: kapacitor_service_status
+  when: kapacitor_start_service
+  ignore_errors: yes
+
+- name: Assert status of Kapacitor service
+  assert:
+    that:
+      - "kapacitor_service_status.rc == 0"
+  when: kapacitor_start_service

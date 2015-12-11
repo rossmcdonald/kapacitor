@@ -1,0 +1,178 @@
+# The hostname of this node.
+# Must be resolvable by any configured InfluxDB hosts.
+{% if kapacitor_hostname is defined and kapacitor_hostname != None %}
+hostname = "{{ kapacitor_hostname }}"
+{% else %}
+hostname = "{{ ansible_hostname }}"
+{% endif %}
+
+# Directory for storing a small amount of metadata about the server.
+data_dir = "{{ kapacitor_data_directory }}"
+
+# Your Enterprise token. By using Enterprise you can
+# send all internal statistics to the Enterprise
+# endpoints which will store and report on the
+# activity of your instances.
+token = ""
+
+[http]
+  # HTTP API Server for Kapacitor
+  # This server is always on,
+  # it servers both as a write endpoint
+  # and as the API endpoint for all other
+  # Kapacitor calls.
+  bind-address = "{{ kapacitor_http_bind_address }}"
+  auth-enabled = {{ kapacitor_http_auth_enabled }}
+  log-enabled = {{ kapacitor_http_log_enabled }}
+  write-tracing = {{ kapacitor_http_write_tracing }}
+  pprof-enabled = {{ kapacitor_http_pprof_enabled }}
+  https-enabled = {{ kapacitor_http_https_enabled }}
+  https-certificate = "{{ kapacitor_http_https_certificate }}"
+
+[logging]
+  # Destination for logs
+  # Can be a path to a file or 'STDOUT', 'STDERR'.
+  file = "{{ kapacitor_logging_file }}"
+  # Logging level can be one of:
+  # DEBUG, INFO, WARN, ERROR, or OFF
+  level = "{{ kapacitor_logging_level }}"
+[replay]
+  # Where to store replay files, aka recordings.
+  dir = "{{ kapacitor_replay_dir }}"
+
+[task]
+  # Where to store the tasks database
+  dir = "{{ kapacitor_task_dir }}"
+
+[influxdb]
+  # Connect to an InfluxDB cluster
+  # Kapacitor can subscribe, query and write to this cluster.
+  # Using InfluxDB is not required and can be disabled.
+  enabled = {{ kapacitor_influxdb_enabled }}
+  urls = [{% for url in kapacitor_influxdb_urls %}"{{ url }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+  username = "{{ kapacitor_influxdb_username }}"
+  password = "{{ kapacitor_influxdb_password }}"
+  timeout = {{ kapacitor_influxdb_timeout }}
+  # Subscriptions use the UDP network protocl.
+  # The following options of for the created UDP listeners for each subscription.
+  # Number of packets to buffer when reading packets off the socket.
+  udp-buffer = {{ kapacitor_influxdb_udp_buffer }}
+  # The size in bytes of the OS read buffer for the UDP socket.
+  # A value of 0 indicates use the OS default.
+  udp-read-buffer = {{ kapacitor_influxdb_udp_read_buffer }}
+
+  [influxdb.subscriptions]
+  # Set of databases and retention policies to subscribe to.
+  # If empty will subscribe to all, minus the list in
+  # influxdb.excluded-subscriptions
+  #
+  # Format
+  # db_name = <list of retention policies>
+  #
+  # Example:
+  # my_database = [ "default", "longterm" ]
+  [influxdb.excluded-subscriptions]
+  # Set of databases and retention policies to exclude from the subscriptions.
+  # If influxdb.subscriptions is empty it will subscribe to all
+  # except databases listed here.
+  #
+  # Format
+  # db_name = <list of retention policies>
+  #
+  # Example:
+  # my_database = [ "default", "longterm" ]
+
+[smtp]
+  # Configure an SMTP email server
+  # Will use TLS and authentication if possible
+  # Only necessary for sending emails from alerts.
+  enabled = {{ kapacitor_smtp_enabled }}
+  host = "{{ kapacitor_smtp_host }}"
+  port = {{ kapacitor_smtp_port }}
+  username = "{{ kapacitor_smtp_username }}"
+  password = "{{ kapacitor_smtp_password }}"
+  # From address for outgoing mail
+  from = "{{ kapacitor_smtp_from }}"
+  # List of default To addresses.
+  to = [{% for email in kapacitor_smtp_to %}"{{ email }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+
+  # Skip TLS certificate verify when connecting to SMTP server
+  no-verify = {{ kapacitor_smtp_no_verify }}
+  # Close idle connections after timeout
+  idle-timeout = "{{ kapacitor_smtp_idle_timeout }}"
+
+[victorops]
+  # Configure VictorOps with your API key and default routing key.
+  enabled = {{ kapacitor_victorops_enabled }}
+  # Your VictorOps API Key.
+  api-key = "{{ kapacitor_victorops_api_key }}"
+  # Default VictorOps routing key, can be overridden per alert.
+  routing-key = "{{ kapacitor_victorops_routing_key }}"
+  # The VictorOps API URL should not need to be changed.
+  url = "{{ kapacitor_victorops_url }}"
+  # If true the all alerts will be sent to VictorOps
+  # without explicity marking them in the TICKscript.
+  # The routing key can still be overridden.
+  global = {{ kapacitor_victorops_global }}
+
+[pagerduty]
+  # Configure PagerDuty.
+  enabled = {{ kapacitor_pagerduty_enabled }}
+  # Your PagerDuty Service Key.
+  service-key = "{{ kapacitor_pagerduty_service_key }}"
+  # The PagerDuty API URL should not need to be changed.
+  url = "{{ kapacitor_pagerduty_url }}"
+  # If true the all alerts will be sent to PagerDuty
+  # without explicity marking them in the TICKscript.
+  global = {{ kapacitor_pagerduty_global }}
+
+[slack]
+  # Configure Slack.
+  enabled = {{ kapacitor_slack_enabled }}
+  # The Slack webhook URL, can be obtained by addding
+  # an Incoming Webhook integration.
+  # Visit https://slack.com/services/new/incoming-webhook
+  # to add new webhook for Kapacitor.
+  url = "{{ kapacitor_slack_url }}"
+  # Default channel for messages
+  channel = "{{ kapacitor_slack_channel }}"
+  # If true the all alerts will be sent to Slack
+  # without explicity marking them in the TICKscript.
+  global = {{ kapacitor_slack_global }}
+
+[reporting]
+  # Send anonymous usage statistics
+  # every 12 hours to Enterprise.
+  enabled = {{ kapacitor_reporting_enabled }}
+  enterprise-url = "{{ kapacitor_reporting_enterprise_url }}"
+  # The interval at which to send all
+  # internal statistics to Enterprise.
+  # If no token is specified this
+  # setting has no effect.
+  stats-interval = "{{ kapacitor_reporting_stats_interval }}"
+
+##################################
+# Input Methods, same as InfluxDB
+#
+
+[collectd]
+  enabled = {{ kapacitor_collectd_enabled }}
+  bind-address = "{{ kapacitor_collectd_bind_address }}"
+  database = "{{ kapacitor_collectd_database }}"
+  retention-policy = "{{ kapacitor_collectd_retention_policy }}"
+  batch-size = {{ kapacitor_collectd_batch_size }}
+  batch-pending = {{ kapacitor_collectd_batch_pending }}
+  batch-timeout = "{{ kapacitor_collectd_batch_timeout }}"
+  typesdb = "{{ kapacitor_collectd_typesdb }}"
+
+[opentsdb]
+  enabled = {{ kapacitor_opentsdb_enabled }}
+  bind-address = "{{ kapacitor_opentsdb_bind_address }}"
+  database = "{{ kapacitor_opentsdb_database }}"
+  retention-policy = "{{ kapacitor_opentsdb_retention_policy }}"
+  consistency-level = "{{ kapacitor_opentsdb_consistency_level }}"
+  tls-enabled = {{ kapacitor_opentsdb_tls_enabled }}
+  certificate = "{{ kapacitor_opentsdb_certificate }}"
+  batch-size = {{ kapacitor_opentsdb_batch_size }}
+  batch-pending = {{ kapacitor_opentsdb_batch_pending }}
+  batch-timeout = "{{ kapacitor_opentsdb_batch_timeout }}"

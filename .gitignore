@@ -1,0 +1,6 @@
+*#
+*~
+venv/
+.vagrant/
+*deb
+*rpm
