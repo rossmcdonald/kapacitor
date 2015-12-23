@@ -28,7 +28,7 @@ kapacitor_replay_dir: /var/lib/kapacitor/replay
 kapacitor_task_dir: /var/lib/kapacitor/tasks
 
 # [influxdb]
-kapacitor_influxdb_enabled: "true"
+kapacitor_influxdb_enabled: "false"
 kapacitor_influxdb_urls:
   - http://localhost:8086
 kapacitor_influxdb_username:

@@ -32,7 +32,9 @@ More advanced configuration options are stored in the `vars/main.yml` file, whic
 Dependencies
 ------------
 
-No other Ansible dependencies are required. This role was tested and developed with Ansible 1.9.4.
+Access to an InfluxDB instance is required to use Kapacitor, though they do not need to be located on the same server (can be configured using the `kapacitor_influxdb_urls` variable). Apart from that, no other Ansible dependencies are required.
+
+This role was tested and developed with Ansible 1.9.4.
 
 Example Playbook
 ----------------

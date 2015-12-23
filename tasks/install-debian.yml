@@ -19,13 +19,13 @@
 - name: Add InfluxData repository [Debian/Ubuntu]
   apt_repository:
     repo: deb https://repos.influxdata.com/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} {{ kapacitor_install_version }}
-    state: latest
+    state: present
   when: kapacitor_install_url is not defined or kapacitor_install_url == None
 
 - name: Install Kapacitor packages [Debian/Ubuntu]
   apt: 
     name: kapacitor
-    state: present
+    state: latest
   when: kapacitor_install_url is not defined or kapacitor_install_url == None
   
 - name: Download Kapacitor package via URL [Debian/Ubuntu]

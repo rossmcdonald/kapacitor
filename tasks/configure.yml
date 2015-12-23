@@ -9,8 +9,8 @@
     group: kapacitor
     mode: 0744
   when: kapacitor_template_configuration
-  
-- name: Start the Kapacitor service
+
+- name: Start/Restart the Kapacitor service
   service:
     name: kapacitor
     state: restarted

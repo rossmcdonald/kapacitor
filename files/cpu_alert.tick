@@ -1,0 +1,7 @@
+stream
+   // Select just the cpu_usage_idle measurement from our example database
+   .from().measurement('cpu_usage_idle')
+   .alert()
+   .crit(lambda: "value" <  70)
+   // Whenever we get an alert write it to a file.
+   .log('/tmp/alerts.log')
