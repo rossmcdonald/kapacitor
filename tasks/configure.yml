@@ -29,3 +29,28 @@
     that:
       - "kapacitor_service_status.rc == 0"
   when: kapacitor_start_service
+
+- name: Check for existing tasks
+  command: kapacitor list tasks
+  register: kapacitor_list_tasks
+
+- debug:
+    var: kapacitor_list_tasks
+  
+- name: Copy specified TICKscript scripts to remote host
+  copy:
+    src: "{{ item.tick }}"
+    dest: /tmp/{{ item.tick }}
+  when: kapacitor_list_tasks.stdout.find("{{ item.name }}") == -1
+  with_items: "{{ kapacitor_tasks_to_enable }}"
+
+- name: Define specified tasks
+  command: kapacitor define -name {{ item.name }} -type {{ item.type }} -tick /tmp/{{ item.tick }} -dbrp {{ item.dbrp }}
+  when: kapacitor_list_tasks.stdout.find("{{ item.name }}") == -1
+  with_items: "{{ kapacitor_tasks_to_enable }}"
+
+- name: Enable specified tasks
+  command: kapacitor enable {{ item.name }}
+  when: kapacitor_list_tasks.stdout.find("{{ item.name }}") == -1
+  with_items: "{{ kapacitor_tasks_to_enable }}"
+  

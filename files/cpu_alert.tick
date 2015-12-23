@@ -1,7 +1,15 @@
+// Define within Kapacitor manually using the command:
+// ```
+// kapacitor define -name cpu_alert -type stream -tick /path/to/cpu_alert.tick -dbrp telegraf.default
+// ```
+// Assuming Telegraf is paired with your InfluxDB instance and that the default database name is in use.
+//
 stream
-   // Select just the cpu_usage_idle measurement from our example database
+   // Select just the cpu_usage_idle measurement from our Telegraf database
    .from().measurement('cpu_usage_idle')
+   // Group by the reported hostname of the machine
+   .groupBy("host")
    .alert()
    .crit(lambda: "value" <  70)
    // Whenever we get an alert write it to a file.
-   .log('/tmp/alerts.log')
+   .log('/tmp/cpu_idle_alerts.log')

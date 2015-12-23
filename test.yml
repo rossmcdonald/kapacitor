@@ -7,5 +7,11 @@
     - vars/main.yml
   tasks:
     - include: tasks/main.yml
+      kapacitor_influxdb_enabled: "true"
+      kapacitor_tasks_to_enable:
+        - name: cpu_alert
+          type: stream
+          tick: cpu_alert.tick
+          dbrp: telegraf.default
   handlers:
     - include: handlers/main.yml
