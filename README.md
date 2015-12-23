@@ -39,7 +39,17 @@ This role was tested and developed with Ansible 1.9.4.
 Example Playbook
 ----------------
 
-An example playbook is included in the `test.yml` file. There is also a `Vagrantfile`, which can be used for quick local testing leveraging [Vagrant](https://www.vagrantup.com/).
+An example playbook is included in the `test.yml` file. There is also a `Vagrantfile`, which can be used for quick local testing leveraging [Vagrant](https://www.vagrantup.com/). Since Kapacitor's use-case is very user-specific, the main goal of this repo is to install, configure, and setup Kapacitor in a customizable way. Currently to enable TICKscripts, specify them as a dictionary in the `kapacitor_tasks_to_enable` variable like so:
+
+```
+      kapacitor_tasks_to_enable:
+        - name: cpu_alert
+          type: stream
+          tick: cpu_alert.tick
+          dbrp: telegraf.default
+```
+
+Where `tick` is the path to the TICKscript file. If placed in the `/files` directory of the role repository, you can just specify the name directly (for example, `cpu_alert.tick`).
 
 Contributions and Feedback
 --------------------------
