@@ -1,0 +1,20 @@
+var disk_total = stream
+                 .from().measurement('disk_total')
+                 .where(lambda: "path" == '/')
+                 .groupBy('host')                       
+
+var disk_used = stream
+                .from().measurement('disk_used')
+                .where(lambda: "path" == '/')
+                .groupBy('host')
+
+disk_used.join(disk_total)
+  .as('used', 'total')
+  .tolerance(5s)
+  .eval(lambda: (float("used.value") / float("total.value")) * float(100)).as('percent_used')
+  .alert()
+  .info(lambda: "percent_used" > 1)
+  .warn(lambda: "percent_used" > 70)
+  .crit(lambda: "percent_used" > 85)
+  .stateChangesOnly()
+  .log('/tmp/disk_alerts.log')

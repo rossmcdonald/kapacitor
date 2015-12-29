@@ -13,5 +13,9 @@
           type: stream
           tick: cpu_alert.tick
           dbrp: telegraf.default
+        - name: disk_alert
+          type: stream
+          tick: disk_alert.tick
+          dbrp: telegraf.default
   handlers:
     - include: handlers/main.yml
