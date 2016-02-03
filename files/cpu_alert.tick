@@ -6,10 +6,9 @@
 //
 stream
    // Select just the cpu_usage_idle measurement from our Telegraf database
-   .from().measurement('cpu_usage_idle')
+   .from().measurement('cpu')
    // Group by the reported hostname of the machine
-   .groupBy("host")
    .alert()
-   .crit(lambda: "value" <  70)
+   .crit(lambda: "usage_idle" <  80)
    // Whenever we get an alert write it to a file.
    .log('/tmp/cpu_idle_alerts.log')
