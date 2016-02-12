@@ -1,0 +1,16 @@
+// Define within Kapacitor manually using the command:
+// ```
+// kapacitor define -name cpu_alert -type batch -tick /path/to/<file>.tick -dbrp telegraf.default
+// ```
+// Assuming Telegraf is paired with your InfluxDB instance and that the default database name is in use.
+//
+batch
+    .query('''
+        SELECT mean(usage_idle)
+        FROM "telegraf"."default"."cpu"
+    ''')
+    .period(5m)
+    .every(5m)
+    .groupBy(time(1m))
+    .alert()
+    .crit(lambda: "usage_idle" < 70)

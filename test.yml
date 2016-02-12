@@ -1,7 +1,8 @@
 - hosts: all
   roles:
-    - influxdb
-    - telegraf
+    - role: influxdb
+      influxdb_overwrite_hosts_file: yes
+    - role: telegraf
   vars_files:
     - defaults/main.yml
     - vars/main.yml
@@ -12,6 +13,10 @@
         - name: cpu_alert
           type: stream
           tick: cpu_alert.tick
+          dbrp: telegraf.default
+        - name: cpu_alert_batch
+          type: batch
+          tick: cpu_alert_batch.tick
           dbrp: telegraf.default
         - name: disk_alert
           type: stream
