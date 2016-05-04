@@ -26,9 +26,18 @@ kapacitor_replay_dir: /var/lib/kapacitor/replay
 
 # [task]
 kapacitor_task_dir: /var/lib/kapacitor/tasks
+kapacitor_snapshot_interval: "60s"
 
-# [influxdb]
+# [deadman]
+kapacitor_deadman_global: "false"
+kapacitor_deadman_threshold: "0.0"
+kapacitor_deadman_interval: "10s"
+kapacitor_deadman_id: "{% raw %}node 'NODE_NAME' in task '{{ .TaskName }}'{% endraw %}"
+kapacitor_deadman_message: "{% raw %}{{ .ID }} is {{ if eq .Level \\\"OK\\\" }}alive{{ else }}dead{{ end }}: {{ index .Fields \\\"collected\\\" | printf \\\"%0.3f\\\" }} points/INTERVAL.{% endraw %}"
+
+# [[influxdb]]
 kapacitor_influxdb_enabled: "false"
+kapacitor_influxdb_name: "localhost"
 kapacitor_influxdb_urls:
   - http://localhost:8086
 kapacitor_influxdb_username:
@@ -36,20 +45,30 @@ kapacitor_influxdb_password:
 kapacitor_influxdb_timeout: 0
 kapacitor_influxdb_udp_buffer: 1000
 kapacitor_influxdb_udp_read_buffer: 0
-
-# TODO(rossmcdonald): Allow for InfluxDB subscriptions and exclusions
+kapacitor_insecure_skip_verify: "false"
 
 # [smtp]
 kapacitor_smtp_enabled: "false"
 kapacitor_smtp_host: localhost
 kapacitor_smtp_port: 25
-kapacitor_smtp_username: 
-kapacitor_smtp_password: 
-kapacitor_smtp_from: 
+kapacitor_smtp_username:
+kapacitor_smtp_password:
+kapacitor_smtp_from:
 kapacitor_smtp_to:
   - "oncall@example.com"
 kapacitor_smtp_no_verify: "false"
 kapacitor_smtp_idle_timeout: 30s
+kapacitor_smtp_global: "false"
+kapacitor_smtp_state_changes_only: "false"
+
+# [opsgenie]
+kapacitor_opsgenie_enabled: "false"
+kapacitor_opsgenie_api_key: ""
+kapacitor_opsgenie_teams: []
+kapacitor_opsgenie_recipients: []
+kapacitor_opsgenie_url: "https://api.opsgenie.com/v1/json/alert"
+kapacitor_opsgenie_recovery_url: "https://api.opsgenie.com/v1/json/alert/note"
+kapacitor_opsgenie_global: "false"
 
 # [victorops]
 kapacitor_victorops_enabled: "false"
@@ -66,20 +85,51 @@ kapacitor_pagerduty_global: "false"
 
 # [slack]
 kapacitor_slack_enabled: "false"
-kapacitor_slack_url: 
-kapacitor_slack_channel: 
+kapacitor_slack_url:
+kapacitor_slack_channel:
 kapacitor_slack_global: "false"
+kapacitor_slack_state_changes_only: "false"
+
+# [hipchat]
+kapacitor_hipchat_enabled: "false"
+kapacitor_hipchat_url: "https://subdomain.hipchat.com/v2/room"
+kapacitor_hipchat_room: ""
+kapacitor_hipchat_token: ""
+kapacitor_hipchat_global: "false"
+kapacitor_hipchat_state_changes_only: "false"
+
+# [alerta]
+kapacitor_alerta_enabled: "false"
+kapacitor_alerta_url: ""
+kapacitor_alerta_token: ""
+kapacitor_alerta_environment: ""
+kapacitor_alerta_origin: "kapacitor"
+
+# [sensu]
+kapacitor_sensu_enabled: "false"
+kapacitor_sensu_addr: "sensu-client:3030"
+kapacitor_sensu_source: "Kapacitor"
 
 # [reporting]
 kapacitor_reporting_enabled: "false"
-kapacitor_reporting_enterprise_url: https://enterprise.influxdata.com
-kapacitor_reporting_stats_interval: 1m0s
+kapacitor_reporting_url: "https://usage.influxdata.com"
+
+# [stats]
+kapacitor_stats_enabled: "false"
+kapacitor_stats_interval: "10s"
+kapacitor_stats_database: "_kapacitor"
+kapacitor_retention_policy: "default"
+
+# [talk]
+kapacitor_talk_enabled: "false"
+kapacitor_talk_url: "https://jianliao.com/v2/services/webhook/uuid"
+kapacitor_talk_author_name: "Kapacitor"
 
 # [collectd]
 kapacitor_collectd_enabled: "false"
 kapacitor_collectd_bind_address: :25826
 kapacitor_collectd_database: collectd
-kapacitor_collectd_retention_policy: 
+kapacitor_collectd_retention_policy:
 kapacitor_collectd_batch_size: 1000
 kapacitor_collectd_batch_pending: 5
 kapacitor_collectd_batch_timeout: 10s
@@ -89,7 +139,7 @@ kapacitor_collectd_typesdb: /usr/share/collectd/types.db
 kapacitor_opentsdb_enabled: "false"
 kapacitor_opentsdb_bind_address: :4242
 kapacitor_opentsdb_database: opentsdb
-kapacitor_opentsdb_retention_policy: 
+kapacitor_opentsdb_retention_policy:
 kapacitor_opentsdb_consistency_level: one
 kapacitor_opentsdb_tls_enabled: "false"
 kapacitor_opentsdb_certificate: /etc/ssl/influxdb.pem
