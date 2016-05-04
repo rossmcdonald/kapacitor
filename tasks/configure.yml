@@ -1,7 +1,7 @@
 ---
 - name: Set templatized Kapacitor configuration
-  template: 
-    src: kapacitor.conf.j2 
+  template:
+    src: kapacitor.conf.j2
     dest: "/etc/kapacitor/kapacitor.conf"
     force: yes
     backup: yes
@@ -36,7 +36,7 @@
 
 - debug:
     var: kapacitor_list_tasks
-  
+
 - name: Copy specified TICKscript scripts to remote host
   copy:
     src: "{{ item.tick }}"
@@ -53,4 +53,3 @@
   command: kapacitor enable {{ item.name }}
   when: kapacitor_list_tasks.stdout.find("{{ item.name }}") == -1
   with_items: "{{ kapacitor_tasks_to_enable }}"
-  

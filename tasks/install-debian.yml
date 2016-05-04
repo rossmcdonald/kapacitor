@@ -1,9 +1,9 @@
 ---
 - name: Install any necessary dependencies [Debian/Ubuntu]
-  apt: 
-    name: "{{ item }}" 
-    state: present 
-    update_cache: yes 
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
     cache_valid_time: 3600
   with_items:
     - python-httplib2
@@ -23,11 +23,11 @@
   when: kapacitor_install_url is not defined or kapacitor_install_url == None
 
 - name: Install Kapacitor packages [Debian/Ubuntu]
-  apt: 
+  apt:
     name: kapacitor
     state: latest
   when: kapacitor_install_url is not defined or kapacitor_install_url == None
-  
+
 - name: Download Kapacitor package via URL [Debian/Ubuntu]
   command: curl -o /tmp/kapacitor-ansible-download.deb {{ kapacitor_install_url }}
   when: kapacitor_install_url is defined and kapacitor_install_url != None

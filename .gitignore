@@ -6,3 +6,6 @@ venv/
 *rpm
 .bundle
 ansible.cfg
+.molecule
+test.retry
+.cache
