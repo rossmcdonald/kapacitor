@@ -9,12 +9,6 @@ hostname = "{{ ansible_hostname }}"
 # Directory for storing a small amount of metadata about the server.
 data_dir = "{{ kapacitor_data_directory }}"
 
-# Your Enterprise token. By using Enterprise you can
-# send all internal statistics to the Enterprise
-# endpoints which will store and report on the
-# activity of your instances.
-token = ""
-
 [http]
   # HTTP API Server for Kapacitor
   # This server is always on,
@@ -44,16 +38,55 @@ token = ""
 [task]
   # Where to store the tasks database
   dir = "{{ kapacitor_task_dir }}"
+  # How often to snapshot running task state.
+  snapshot-interval = "{{ kapacitor_snapshot_interval }}"
 
+[deadman]
+  # Configure a deadman's switch
+  # Globally configure deadman's switches on all stream tasks.
+  # NOTE: for this to be of use you must also globally configure at least one alerting method.
+  global = {{ kapacitor_deadman_global }}
+  # Threshold, if globally configured the alert will be triggered if the throughput in points/interval is <= threshold.
+  threshold = {{ kapacitor_deadman_threshold }}
+  # Interval, if globally configured the frequency at which to check the throughput.
+  interval = "{{ kapacitor_deadman_interval }}"
+  # Id -- the alert Id, NODE_NAME will be replaced with the name of the node being monitored.
+  id = "{{ kapacitor_deadman_id }}"
+  # The message of the alert. INTERVAL will be replaced by the interval.
+  message = "{{ kapacitor_deadman_message }}"
+
+# Multiple InfluxDB configurations can be defined.
+# Exactly one must be marked as the default.
+# Each one will be given a name and can be referenced in batch queries and InfluxDBOut nodes.
 [[influxdb]]
   # Connect to an InfluxDB cluster
   # Kapacitor can subscribe, query and write to this cluster.
   # Using InfluxDB is not required and can be disabled.
   enabled = {{ kapacitor_influxdb_enabled }}
+  default = true
+  name = "{{ kapacitor_influxdb_name }}"
   urls = [{% for url in kapacitor_influxdb_urls %}"{{ url }}"{% if not loop.last %}, {% endif %}{% endfor %}]
   username = "{{ kapacitor_influxdb_username }}"
   password = "{{ kapacitor_influxdb_password }}"
   timeout = {{ kapacitor_influxdb_timeout }}
+  # Absolute path to pem encoded CA file.
+  # A CA can be provided without a key/cert pair
+  {% if kapacitor_ssl_ca is defined and kapacitor_ssl_ca != None %}
+  ssl-ca = "{{ kapacitor_ssl_ca }}"
+  {% endif %}
+
+  # Absolutes paths to pem encoded key and cert files.
+  {% if kapacitor_ssl_cert is defined and kapacitor_ssl_cert != None %}
+  ssl-cert = "{{ kapacitor_ssl_cert }}"
+  {% endif %}
+  {% if kapacitor_ssl_key is defined and kapacitor_ssl_key != None %}
+  ssl-key = "{{ kapacitor_ssl_key }}"
+  {% endif %}
+
+  # Do not verify the TLS/SSL certificate.
+  # This is insecure.
+  insecure-skip-verify = {{ kapacitor_insecure_skip_verify }}
+
   # Subscriptions use the UDP network protocl.
   # The following options of for the created UDP listeners for each subscription.
   # Number of packets to buffer when reading packets off the socket.
@@ -63,25 +96,30 @@ token = ""
   udp-read-buffer = {{ kapacitor_influxdb_udp_read_buffer }}
 
   [influxdb.subscriptions]
-  # Set of databases and retention policies to subscribe to.
-  # If empty will subscribe to all, minus the list in
-  # influxdb.excluded-subscriptions
-  #
-  # Format
-  # db_name = <list of retention policies>
-  #
-  # Example:
-  # my_database = [ "default", "longterm" ]
+    # Set of databases and retention policies to subscribe to.
+    # If empty will subscribe to all, minus the list in
+    # influxdb.excluded-subscriptions
+    #
+    # Format
+    # db_name = <list of retention policies>
+    #
+    # Example:
+    # my_database = [ "default", "longterm" ]
+    {% if kapacitor_influxdb_subscriptions is defined and kapacitor_influxdb_subscriptions|count > 0 %}
+    {%- for influxdb_subscription in kapacitor_influxdb_subscriptions -%}
+    {{ influxdb_subscription.name }} = [{% for rp in influxdb_subscription.rps %}"{{ rp }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+    {% endfor %}{% endif %}
+
   [influxdb.excluded-subscriptions]
-  # Set of databases and retention policies to exclude from the subscriptions.
-  # If influxdb.subscriptions is empty it will subscribe to all
-  # except databases listed here.
-  #
-  # Format
-  # db_name = <list of retention policies>
-  #
-  # Example:
-  # my_database = [ "default", "longterm" ]
+    # Set of databases and retention policies to exclude from the subscriptions.
+    # If influxdb.subscriptions is empty it will subscribe to all
+    # except databases listed here.
+    #
+    # Format
+    # db_name = <list of retention policies>
+    #
+    # Example:
+    # my_database = [ "default", "longterm" ]
 
 [smtp]
   # Configure an SMTP email server
@@ -101,6 +139,38 @@ token = ""
   no-verify = {{ kapacitor_smtp_no_verify }}
   # Close idle connections after timeout
   idle-timeout = "{{ kapacitor_smtp_idle_timeout }}"
+
+  # If true the all alerts will be sent via Email
+  # without explicitly marking them in the TICKscript.
+  global = {{ kapacitor_smtp_global }}
+  # Only applies if global is true.
+  # Sets all alerts in state-changes-only mode,
+  # meaning alerts will only be sent if the alert state changes.
+  state-changes-only = {{ kapacitor_smtp_state_changes_only }}
+
+[opsgenie]
+  # Configure OpsGenie with your API key and default routing key.
+  enabled = {{ kapacitor_opsgenie_enabled }}
+  # Your OpsGenie API Key.
+  api-key = "{{ kapacitor_opsgenie_api_key }}"
+  # Default OpsGenie teams, can be overridden per alert.
+  {% if kapacitor_opsgenie_teams|count > 0 %}
+  teams = [{% for team in kapacitor_opsgenie_teams %}"{{ team }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+  {% endif %}
+  # Default OpsGenie recipients, can be overridden per alert.
+  {% if kapacitor_opsgenie_recipients|count > 0 %}
+  recipients = [{% for recipient in kapacitor_opsgenie_recipients %}"{{ recipient }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+  {% endif %}
+  # The OpsGenie API URL should not need to be changed.
+  url = "{{ kapacitor_opsgenie_url }}"
+  # The OpsGenie Recovery URL, you can change this
+  # based on which behavior you want a recovery to
+  # trigger (Add Notes, Close Alert, etc.)
+  recovery_url = "{{ kapacitor_opsgenie_recovery_url }}"
+  # If true then all alerts will be sent to OpsGenie
+  # without explicitly marking them in the TICKscript.
+  # The team and recipients can still be overridden.
+  global = {{ kapacitor_opsgenie_global }}
 
 [victorops]
   # Configure VictorOps with your API key and default routing key.
@@ -140,17 +210,118 @@ token = ""
   # If true the all alerts will be sent to Slack
   # without explicity marking them in the TICKscript.
   global = {{ kapacitor_slack_global }}
+  # Only applies if global is true.
+  # Sets all alerts in state-changes-only mode,
+  # meaning alerts will only be sent if the alert state changes.
+  state-changes-only = {{ kapacitor_slack_state_changes_only }}
+
+[hipchat]
+  # Configure HipChat.
+  enabled = {{ kapacitor_hipchat_enabled }}
+  # The HipChat API URL. Replace subdomain with your
+  # HipChat subdomain.
+  url = "{{ kapacitor_hipchat_url }}"
+  # Visit https://www.hipchat.com/docs/apiv2
+  # for information on obtaining your room id and
+  # authentication token.
+  # Default room for messages
+  room = "{{ kapacitor_hipchat_room }}"
+  # Default authentication token
+  token = "{{ kapacitor_hipchat_token }}"
+  # If true then all alerts will be sent to HipChat
+  # without explicitly marking them in the TICKscript.
+  global = {{ kapacitor_hipchat_global }}
+  # Only applies if global is true.
+  # Sets all alerts in state-changes-only mode,
+  # meaning alerts will only be sent if the alert state changes.
+  state-changes-only = {{ kapacitor_hipchat_state_changes_only }}
+
+[alerta]
+  # Configure Alerta.
+  enabled = {{ kapacitor_alerta_enabled }}
+  # The Alerta URL.
+  url = "{{ kapacitor_alerta_url }}"
+  # Default authentication token.
+  token = "{{ kapacitor_alerta_token }}"
+  # Default environment.
+  environment = "{{ kapacitor_alerta_environment }}"
+  # Default origin.
+  origin = "{{ kapacitor_alerta_origin }}"
+
+[sensu]
+  # Configure Sensu.
+  enabled = {{ kapacitor_sensu_enabled }}
+  # The Sensu Client host:port address.
+  addr = "{{ kapacitor_sensu_addr }}"
+  # Default JIT source.
+  source = "{{ kapacitor_sensu_source }}"
 
 [reporting]
   # Send anonymous usage statistics
   # every 12 hours to Enterprise.
   enabled = {{ kapacitor_reporting_enabled }}
-  enterprise-url = "{{ kapacitor_reporting_enterprise_url }}"
-  # The interval at which to send all
-  # internal statistics to Enterprise.
-  # If no token is specified this
-  # setting has no effect.
-  stats-interval = "{{ kapacitor_reporting_stats_interval }}"
+  url = "{{ kapacitor_reporting_url }}"
+
+[stats]
+  # Emit internal statistics about Kapacitor.
+  # To consume these stats create a stream task
+  # that selects data from the configured database
+  # and retention policy.
+  #
+  # Example:
+  #  stream.from().database('_kapacitor').retentionPolicy('default')...
+  #
+  enabled = {{ kapacitor_stats_enabled }}
+  stats-interval = "{{ kapacitor_stats_interval }}"
+  database = "{{ kapacitor_stats_database }}"
+  retention-policy= "{{ kapacitor_retention_policy }}"
+
+[udf]
+# Configuration for UDFs (User Defined Functions)
+[udf.functions]
+    # Example go UDF.
+    # First compile example:
+    #   go build -o avg_udf ./udf/agent/examples/moving_avg.go
+    #
+    # Use in TICKscript like:
+    #   stream.goavg()
+    #           .field('value')
+    #           .size(10)
+    #           .as('m_average')
+    #
+    # uncomment to enable
+    #[udf.functions.goavg]
+    #   prog = "./avg_udf"
+    #   args = []
+    #   timeout = "10s"
+
+    # Example python UDF.
+    # Use in TICKscript like:
+    #   stream.pyavg()
+    #           .field('value')
+    #           .size(10)
+    #           .as('m_average')
+    #
+    # uncomment to enable
+    #[udf.functions.pyavg]
+    #   prog = "/usr/bin/python2"
+    #   args = ["-u", "./udf/agent/examples/moving_avg.py"]
+    #   timeout = "10s"
+    #   [udf.functions.pyavg.env]
+    #       PYTHONPATH = "./udf/agent/py"
+
+    # Example UDF over a socket
+    #[udf.functions.myCustomUDF]
+    #   socket = "/path/to/socket"
+    #   timeout = "10s"
+
+[talk]
+  # Configure Talk.
+  enabled = {{ kapacitor_talk_enabled }}
+  # The Talk webhook URL.
+  url = "{{ kapacitor_talk_url }}"
+  # The default authorName.
+  author_name = "{{ kapacitor_talk_author_name }}"
 
 ##################################
 # Input Methods, same as InfluxDB

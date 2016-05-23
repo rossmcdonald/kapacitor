@@ -18,4 +18,4 @@ kapacitor_template_configuration: yes
 
 # If supplied, will check for presence of database, and error if not found (useful for upgrade
 # testing).
-kapacitor_verify_database_is_present: 
+kapacitor_verify_database_is_present:

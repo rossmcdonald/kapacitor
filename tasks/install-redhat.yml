@@ -1,7 +1,7 @@
 ---
 - name: Install any necessary dependencies [RedHat/CentOS]
-  yum: 
-    name: "{{ item }}" 
+  yum:
+    name: "{{ item }}"
     state: present
   with_items:
     - curl
@@ -15,14 +15,13 @@
   when: kapacitor_install_url is not defined or kapacitor_install_url == None
 
 - name: Install Kapacitor packages [RHEL/CentOS]
-  yum: 
+  yum:
     name: kapacitor
     state: present
   when: kapacitor_install_url is not defined or kapacitor_install_url == None
 
 - name: Install Kapacitor from URL [RHEL/CentOS]
-  yum: 
+  yum:
     name: "{{ kapacitor_install_url }}"
     state: present
   when: kapacitor_install_url is defined and kapacitor_install_url != None
-  
