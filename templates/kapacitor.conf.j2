@@ -24,12 +24,12 @@ data_dir = "{{ kapacitor_data_directory }}"
   https-certificate = "{{ kapacitor_http_https_certificate }}"
 
 [logging]
-  # Destination for logs
-  # Can be a path to a file or 'STDOUT', 'STDERR'.
-  file = "{{ kapacitor_logging_file }}"
-  # Logging level can be one of:
-  # DEBUG, INFO, WARN, ERROR, or OFF
-  level = "{{ kapacitor_logging_level }}"
+    # Destination for logs
+    # Can be a path to a file or 'STDOUT', 'STDERR'.
+    file = "{{ kapacitor_logging_file }}"
+    # Logging level can be one of:
+    # DEBUG, INFO, WARN, ERROR, or OFF
+    level = "{{ kapacitor_logging_level }}"
 
 [replay]
   # Where to store replay files, aka recordings.
@@ -37,9 +37,16 @@ data_dir = "{{ kapacitor_data_directory }}"
 
 [task]
   # Where to store the tasks database
+  # DEPRECATED: This option is not needed for new installations.
+  # It is only used to determine the location of the task.db file
+  # for migrating to the new `storage` service.
   dir = "{{ kapacitor_task_dir }}"
   # How often to snapshot running task state.
   snapshot-interval = "{{ kapacitor_snapshot_interval }}"
+
+[storage]
+  # Where to store the Kapacitor boltdb database
+  boltdb = "{{ kapacitor_storage_boltdb }}"
 
 [deadman]
   # Configure a deadman's switch
@@ -109,7 +116,6 @@ data_dir = "{{ kapacitor_data_directory }}"
     {%- for influxdb_subscription in kapacitor_influxdb_subscriptions -%}
     {{ influxdb_subscription.name }} = [{% for rp in influxdb_subscription.rps %}"{{ rp }}"{% if not loop.last %}, {% endif %}{% endfor %}]
     {% endfor %}{% endif %}
-
   [influxdb.excluded-subscriptions]
     # Set of databases and retention policies to exclude from the subscriptions.
     # If influxdb.subscriptions is empty it will subscribe to all
@@ -149,28 +155,28 @@ data_dir = "{{ kapacitor_data_directory }}"
   state-changes-only = {{ kapacitor_smtp_state_changes_only }}
 
 [opsgenie]
-  # Configure OpsGenie with your API key and default routing key.
-  enabled = {{ kapacitor_opsgenie_enabled }}
-  # Your OpsGenie API Key.
-  api-key = "{{ kapacitor_opsgenie_api_key }}"
-  # Default OpsGenie teams, can be overridden per alert.
-  {% if kapacitor_opsgenie_teams|count > 0 %}
-  teams = [{% for team in kapacitor_opsgenie_teams %}"{{ team }}"{% if not loop.last %}, {% endif %}{% endfor %}]
-  {% endif %}
-  # Default OpsGenie recipients, can be overridden per alert.
-  {% if kapacitor_opsgenie_recipients|count > 0 %}
-  recipients = [{% for recipient in kapacitor_opsgenie_recipients %}"{{ recipient }}"{% if not loop.last %}, {% endif %}{% endfor %}]
-  {% endif %}
-  # The OpsGenie API URL should not need to be changed.
-  url = "{{ kapacitor_opsgenie_url }}"
-  # The OpsGenie Recovery URL, you can change this
-  # based on which behavior you want a recovery to
-  # trigger (Add Notes, Close Alert, etc.)
-  recovery_url = "{{ kapacitor_opsgenie_recovery_url }}"
-  # If true then all alerts will be sent to OpsGenie
-  # without explicitly marking them in the TICKscript.
-  # The team and recipients can still be overridden.
-  global = {{ kapacitor_opsgenie_global }}
+    # Configure OpsGenie with your API key and default routing key.
+    enabled = {{ kapacitor_opsgenie_enabled }}
+    # Your OpsGenie API Key.
+    api-key = "{{ kapacitor_opsgenie_api_key }}"
+    # Default OpsGenie teams, can be overridden per alert.
+    {% if kapacitor_opsgenie_teams|count > 0 %}
+    teams = [{% for team in kapacitor_opsgenie_teams %}"{{ team }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+    {% endif %}
+    # Default OpsGenie recipients, can be overridden per alert.
+    {% if kapacitor_opsgenie_recipients|count > 0 %}
+    recipients = [{% for recipient in kapacitor_opsgenie_recipients %}"{{ recipient }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+    {% endif %}
+    # The OpsGenie API URL should not need to be changed.
+    url = "{{ kapacitor_opsgenie_url }}"
+    # The OpsGenie Recovery URL, you can change this
+    # based on which behavior you want a recovery to
+    # trigger (Add Notes, Close Alert, etc.)
+    recovery_url = "{{ kapacitor_opsgenie_recovery_url }}"
+    # If true then all alerts will be sent to OpsGenie
+    # without explicitly marking them in the TICKscript.
+    # The team and recipients can still be overridden.
+    global = {{ kapacitor_opsgenie_global }}
 
 [victorops]
   # Configure VictorOps with your API key and default routing key.
@@ -182,7 +188,7 @@ data_dir = "{{ kapacitor_data_directory }}"
   # The VictorOps API URL should not need to be changed.
   url = "{{ kapacitor_victorops_url }}"
   # If true the all alerts will be sent to VictorOps
-  # without explicity marking them in the TICKscript.
+  # without explicitly marking them in the TICKscript.
   # The routing key can still be overridden.
   global = {{ kapacitor_victorops_global }}
 
@@ -194,7 +200,7 @@ data_dir = "{{ kapacitor_data_directory }}"
   # The PagerDuty API URL should not need to be changed.
   url = "{{ kapacitor_pagerduty_url }}"
   # If true the all alerts will be sent to PagerDuty
-  # without explicity marking them in the TICKscript.
+  # without explicitly marking them in the TICKscript.
   global = {{ kapacitor_pagerduty_global }}
 
 [slack]
@@ -208,7 +214,7 @@ data_dir = "{{ kapacitor_data_directory }}"
   # Default channel for messages
   channel = "{{ kapacitor_slack_channel }}"
   # If true the all alerts will be sent to Slack
-  # without explicity marking them in the TICKscript.
+  # without explicitly marking them in the TICKscript.
   global = {{ kapacitor_slack_global }}
   # Only applies if global is true.
   # Sets all alerts in state-changes-only mode,
