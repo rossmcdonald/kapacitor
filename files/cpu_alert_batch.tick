@@ -5,12 +5,12 @@
 // Assuming Telegraf is paired with your InfluxDB instance and that the default database name is in use.
 //
 batch
-    .query('''
+    |query('''
         SELECT mean(usage_idle)
         FROM "telegraf"."default"."cpu"
     ''')
-    .period(5m)
-    .every(5m)
-    .groupBy(time(1m))
-    .alert()
-    .crit(lambda: "usage_idle" < 70)
+        .period(5m)
+        .every(5m)
+        .groupBy(time(1m))
+    |alert()
+        .crit(lambda: "usage_idle" < 70)

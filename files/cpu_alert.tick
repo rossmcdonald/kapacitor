@@ -5,10 +5,12 @@
 // Assuming Telegraf is paired with your InfluxDB instance and that the default database name is in use.
 //
 stream
-   // Select just the cpu_usage_idle measurement from our Telegraf database
-   .from().measurement('cpu')
-   // Group by the reported hostname of the machine
-   .alert()
-   .crit(lambda: "usage_idle" <  80)
-   // Whenever we get an alert write it to a file.
-   .log('/tmp/cpu_idle_alerts.log')
+    // Select just the cpu_usage_idle measurement from our Telegraf database
+    |from()
+        .measurement('cpu')
+        // Group by the reported hostname of the machine
+        .groupBy('host')
+    |alert()
+        .crit(lambda: "usage_idle" <  80)
+        // Whenever we get an alert write it to a file.
+        .log('/tmp/cpu_idle_alerts.log')

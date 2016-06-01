@@ -18,6 +18,11 @@
   register: kapacitor_started
   when: kapacitor_start_service
 
+- name: Pause to ensure Kapacitor service is up and send report
+  pause:
+    seconds: 15
+  when: kapacitor_reporting_enabled == "true" and kapacitor_started.changed and kapacitor_start_service
+
 - name: Collect service status
   command: service kapacitor status
   register: kapacitor_service_status
@@ -45,7 +50,7 @@
   with_items: "{{ kapacitor_tasks_to_enable }}"
 
 - name: Define specified tasks
-  command: kapacitor define -name {{ item.name }} -type {{ item.type }} -tick /tmp/{{ item.tick }} -dbrp {{ item.dbrp }}
+  command: kapacitor define {{ item.name }} -type {{ item.type }} -tick /tmp/{{ item.tick }} -dbrp {{ item.dbrp }}
   when: kapacitor_list_tasks.stdout.find("{{ item.name }}") == -1
   with_items: "{{ kapacitor_tasks_to_enable }}"
 
